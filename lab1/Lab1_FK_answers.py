@@ -110,15 +110,15 @@ def part2_forward_kinematics(joint_names, joint_parents, joint_offsets, motion_d
     motion_data = motion_datas[frame_id]
     joint_positions = []  # 全局位置
     joint_orientations = []  # 全局朝向
-    joint_rotation = []
-    index_rotate = 0
+    joint_rotation = []  # 局部旋转 motion_data信息
 
-    joint_position_temp = [motion_data[0],motion_data[1],motion_data[2]]
+    joint_position_temp = [motion_data[0], motion_data[1], motion_data[2]]
     motion_data = motion_data[3:]
 
+    index_rotate = 0
     for i in range(len(joint_names)):
         if joint_names[i].endswith("_end"):
-            joint_rotation.append([0,0,0])
+            joint_rotation.append([0, 0, 0])
         else:
             num = index_rotate * 3
             joint_rotation.append([motion_data[num], motion_data[num + 1], motion_data[num + 2]])
@@ -127,7 +127,7 @@ def part2_forward_kinematics(joint_names, joint_parents, joint_offsets, motion_d
     for i in range(len(joint_names)):
         parent_index = joint_parents[i]
         if parent_index == -1:
-            Q1 = R.from_euler('XYZ', joint_rotation[0], degrees=True) # 全局朝向
+            Q1 = R.from_euler('XYZ', joint_rotation[0], degrees=True)  # 全局朝向
             P1 = joint_position_temp
         else:
             Q0 = R.from_quat(joint_orientations[parent_index])
@@ -136,16 +136,25 @@ def part2_forward_kinematics(joint_names, joint_parents, joint_offsets, motion_d
             L0 = joint_offsets[i]
 
             # 计算当前关节的全局位置和朝向
-
             Q1 = Q0 * R.from_euler('XYZ', R1, degrees=True)
             P1 = P0 + Q0.apply(L0)
 
         joint_positions.append(P1)
         joint_orientations.append(Q1.as_quat())
 
-
     return np.array(joint_positions), np.array(joint_orientations)
 
+
+def get_rotation_matrix(z_angle_degrees):
+    # 将角度转换为弧度
+    angle_radians = np.radians(z_angle_degrees)
+    # 旋转轴（这里选择绕Z轴旋转）
+    rotation_axis = [0, 0, 1]
+    # 使用Rotation类构建旋转对象
+    rotation = R.from_rotvec(angle_radians * rotation_axis)
+    # 得到旋转矩阵
+    rotation_matrix = rotation.as_matrix()
+    return rotation_matrix
 
 def get_rotation_matrix(vector_A, vector_B):
     # Normalize the input vectors to ensure they have unit length
@@ -159,6 +168,8 @@ def get_rotation_matrix(vector_A, vector_B):
     rotation_matrix = rotation_quaternion.as_matrix()
 
     return rotation_matrix
+
+# A的旋转 T的骨骼，但是因为基础姿势不一样，所以不能直接使用，需要把基础姿势的偏移扭回来
 def part3_retarget_func(T_pose_bvh_path, A_pose_bvh_path):
     """
     将 A-pose的bvh重定向到T-pose上
@@ -169,75 +180,60 @@ def part3_retarget_func(T_pose_bvh_path, A_pose_bvh_path):
         两个bvh的joint name顺序可能不一致哦(
         as_euler时也需要大写的XYZ
     """
-    motion_data = []
-    A_motion_data = load_motion_data(A_pose_bvh_path)
-    T_motion_data = load_motion_data(T_pose_bvh_path)
-    # 硬去掉position参数
-    A_motion_data = A_motion_data[3:]
-    T_motion_data = T_motion_data[3:]
 
-    A_joint_name, A_joint_parent,_ = part1_calculate_pose(A_pose_bvh_path)
-    T_joint_name, T_joint_parent,_ = part1_calculate_pose(T_pose_bvh_path)
+    # 关节index
+    A_joint_name, A_joint_parent,A_offset = part1_calculate_pose(A_pose_bvh_path)
+    T_joint_name, T_joint_parent,T_offset = part1_calculate_pose(T_pose_bvh_path)
 
-    # 对应骨骼
+    # 建立骨骼映射
     A_bone_index = {}
-    B_bone_index = {}
     for i in range(len(A_joint_name)):
         A_bone_index[A_joint_name[i]] = i
-    for i in range(len(T_joint_name)):
-        B_bone_index[T_joint_name[i]] = i
 
-    # 旋转
-    T_joint_rotation = []
-    index_rotate = 0
-    for i in range(len(T_joint_name)):
-        if A_joint_name[i].endswith("_end"):
-            T_joint_rotation.append([0, 0, 0])
-        else:
-            num = index_rotate * 3
-            T_joint_rotation.append([T_motion_data[num], T_motion_data[num + 1], T_motion_data[num + 2]])
-            index_rotate += 1
+    A_motion_data = load_motion_data(A_pose_bvh_path)
 
-    T_joint_orientations = [R.from_euler('XYZ', T_joint_rotation[0], degrees=True).as_quat()]  # 全局朝向
-    A_joint_rotation = []
-    index_rotate = 0
-    for i in range(len(A_joint_name)):
-        if A_joint_name[i].endswith("_end"):
-            A_joint_rotation.append([0, 0, 0])
-        else:
-            num = index_rotate * 3
-            A_joint_rotation.append([A_motion_data[num], A_motion_data[num + 1], A_motion_data[num + 2]])
-            index_rotate += 1
-    A_joint_orientations = [R.from_euler('XYZ', A_joint_rotation[0], degrees=True).as_quat()]  # 全局朝向
+    res = []
+    for frame in range(len(A_motion_data)):
+        data = []
+        A_motion_data_frame = A_motion_data[frame]
+        # init 硬去掉position参数
+        motion_data_node = A_motion_data_frame[0:3]
+        A_motion_data_frame = A_motion_data_frame[3:]
 
-    R_A_PI = A_joint_orientations[0]
-    Q_A__B_PI = get_rotation_matrix(A_joint_orientations[0],T_joint_orientations[0]).T
-    R_B_PI = R_A_PI * Q_A__B_PI.T()
-    motion_data = T_motion_data[0:3]
-    motion_data.append(R_B_PI)
+        # 骨骼motion旋转
+        index_rotate = 0
+        A_joint_rotation = []
+        for i in range(len(A_joint_name)):
+            if A_joint_name[i].endswith("_end"):
+                A_joint_rotation.append([0, 0, 0])
+            else:
+                num = index_rotate * 3
+                A_joint_rotation.append([A_motion_data_frame[num], A_motion_data_frame[num + 1], A_motion_data_frame[num + 2]])
+                index_rotate += 1
 
-    # for i in range(1, len(A_joint_name)):
-        # parent_index = joint_parents[i]
-        #
-        # Q0 = R.from_quat(joint_orientations[parent_index])
-        # R1 = joint_rotation[i]
-        # P0 = joint_positions[parent_index]
-        # L0 = joint_offsets[i]
-        #
-        # # 计算当前关节的全局位置和朝向
-        #
-        # Q1 = Q0 * R.from_euler('XYZ', R1, degrees=True)
-        # P1 = P0 + Q0.apply(L0)
-        #
-        # joint_positions.append(P1)
-        # joint_orientations.append(Q1.as_quat())
+        for i in range(len(T_joint_name)):
 
 
+            join_name = T_joint_name[i]
+            A_index = A_bone_index[join_name]
 
+            if join_name.endswith("_end"):
+                continue
 
-    # 最后返回retarget后的motion_data
+            if join_name == "RootJoint":
+                data.append(motion_data_node)
 
-    # R_B_I = Q_A__B_PI * R_A_I * Q_A__B_I.T()
-    # R_B_PI = R_A_PI * Q_A__B_PI.T()
+            elif join_name == "lShoulder":
+                A_joint_rotation[A_index][2] -= 45
+            elif join_name == "rShoulder":
+                A_joint_rotation[A_index][2] += 45
+            data.append(A_joint_rotation[A_index])
 
-    return motion_data
+        temp = []
+        for u in data:
+            temp.append(u[0])
+            temp.append(u[1])
+            temp.append(u[2])
+        res.append(temp)
+
+    return np.array(res)
