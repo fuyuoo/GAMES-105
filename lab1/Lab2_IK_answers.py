@@ -1,10 +1,17 @@
-import numbers
-
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 
-def FK(start, path, joint_offsets_path, joint_rotations_path, joint_positions, joint_orientations):
+def Other_FK(start, path, joint_offsets_path, joint_rotations_path, joint_positions, joint_orientations):
+    # init rotation
+    joint_rotations_path = [R.from_quat(joint_orientations[0])]
+    for i in range(1, len(path) - 1):
+        orientation_A = joint_orientations[path[i]]
+        orientation_B = joint_orientations[path[i + 1]]
+        rotation_offset = np.multiply(orientation_A, np.conj(orientation_B))
+        joint_rotations_path.append(R.from_quat(rotation_offset))
+    joint_rotations_path.append(R.from_quat([0, 0, 0, 1]))
+
     for index in range(start - 1, len(path) - 1):
         joint_index = index + 1
         parent_index = index
@@ -24,31 +31,8 @@ def FK(start, path, joint_offsets_path, joint_rotations_path, joint_positions, j
         joint_orientations[path[joint_index]] = Q1.as_quat()
 
 
-def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, target_pose):
-    """
-    完成函数，计算逆运动学
-    输入: 
-        meta_data: 为了方便，将一些固定信息进行了打包，见上面的meta_data类
-        joint_positions: 当前的关节位置，是一个numpy数组，shape为(M, 3)，M为关节数
-        joint_orientations: 当前的关节朝向，是一个numpy数组，shape为(M, 4)，M为关节数
-        target_pose: 目标位置，是一个numpy数组，shape为(3,)
-    输出:
-        经过IK后的姿态
-        joint_positions: 计算得到的关节位置，是一个numpy数组，shape为(M, 3)，M为关节数
-        joint_orientations: 计算得到的关节朝向，是一个numpy数组，shape为(M, 4)，M为关节数
-    """
-
-    # CCD 从叶子节点反向迭代
-    path, _, _, _ = meta_data.get_path_from_root_to_end()
-
-    # init rotation
-    joint_rotations_path = [R.from_quat(joint_orientations[0])]
-    for i in range(1, len(path) - 1):
-        orientation_A = joint_orientations[path[i]]
-        orientation_B = joint_orientations[path[i + 1]]
-        rotation_offset = np.multiply(orientation_A, np.conj(orientation_B))
-        joint_rotations_path.append(R.from_quat(rotation_offset))
-    joint_rotations_path.append(R.from_quat([0, 0, 0, 1]))
+def CCD(meta_data, joint_positions, joint_orientations, target_pose):
+    path, path_name, path1, path2 = meta_data.get_path_from_root_to_end()
 
     # init offset
     joint_initial_position = meta_data.joint_initial_position
@@ -68,11 +52,29 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
             end_vector = joint_positions[path[-1]] - cur_position
             rotate_quat = R.align_vectors([end_vector], [target_vector])[0]
             joint_rotations_path[i] = rotate_quat * joint_rotations_path[i]
-            FK(i, path, joint_offsets_path, joint_rotations_path, joint_positions, joint_orientations)
             min_distance = min(min_distance, np.linalg.norm(target_pose - joint_positions[path[-1]]))
             if min_distance <= 0.01:
                 break
         cnt += 1
+    return path_positions, path_orientations
+
+def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, target_pose):
+    """
+    完成函数，计算逆运动学
+    输入: 
+        meta_data: 为了方便，将一些固定信息进行了打包，见上面的meta_data类
+        joint_positions: 当前的关节位置，是一个numpy数组，shape为(M, 3)，M为关节数
+        joint_orientations: 当前的关节朝向，是一个numpy数组，shape为(M, 4)，M为关节数
+        target_pose: 目标位置，是一个numpy数组，shape为(3,)
+    输出:
+        经过IK后的姿态
+        joint_positions: 计算得到的关节位置，是一个numpy数组，shape为(M, 3)，M为关节数
+        joint_orientations: 计算得到的关节朝向，是一个numpy数组，shape为(M, 4)，M为关节数
+    """
+
+    path_positions, path_orientations = CCD(meta_data, joint_positions, joint_orientations, target_pose)
+
+    joint_positions, joint_orientations = Other_FK(joint_offsets, joint_rotations, joint_positions, joint_orientations)
 
     return joint_positions, joint_orientations
 
