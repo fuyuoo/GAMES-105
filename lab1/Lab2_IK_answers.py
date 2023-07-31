@@ -79,8 +79,7 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
         if meta_data.joint_parent[i] == -1:
             joint_rotations[i] = R.from_quat(joint_orientations[i])
         else:
-            joint_rotations[i] = R.inv(R.from_quat(joint_orientations[meta_data.joint_parent[i]])) * R.from_quat(
-                joint_orientations[i])
+            joint_rotations[i] = R.inv(R.from_quat(joint_orientations[meta_data.joint_parent[i]])) * R.from_quat(joint_orientations[i])
 
     # path_joints 的 forwar_kinematics
     for i in range(len(path2) - 1):
@@ -97,12 +96,9 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
         if meta_data.joint_parent[i] == -1:
             continue
         if meta_data.joint_name[i] not in path_name:
-            joint_positions[i] = joint_positions[meta_data.joint_parent[i]] + \
-                                 R.from_quat(joint_orientations[meta_data.joint_parent[i]]).apply(
-                                     meta_data.joint_initial_position[i] - \
+            joint_positions[i] = joint_positions[meta_data.joint_parent[i]] + R.from_quat(joint_orientations[meta_data.joint_parent[i]]).apply(meta_data.joint_initial_position[i] - \
                                      meta_data.joint_initial_position[meta_data.joint_parent[i]])
-            joint_orientations[i] = (
-                        R.from_quat(joint_orientations[meta_data.joint_parent[i]]) * joint_rotations[i]).as_quat()
+            joint_orientations[i] = (R.from_quat(joint_orientations[meta_data.joint_parent[i]]) * joint_rotations[i]).as_quat()
 
     return joint_positions, joint_orientations
 
