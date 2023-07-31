@@ -37,7 +37,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1690806215867</updated>
-      <workItem from="1690806217036" duration="321000" />
+      <workItem from="1690806217036" duration="383000" />
     </task>
     <servers />
   </component>
@@ -60,8 +60,8 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Lab2_IK_answers.py</url>
-          <line>95</line>
-          <option name="timeStamp" value="3" />
+          <line>87</line>
+          <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
