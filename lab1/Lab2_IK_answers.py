@@ -24,15 +24,16 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
     joint_initial_position = meta_data.joint_initial_position
     path, path_name, path1, path2 = meta_data.get_path_from_root_to_end()
 
-    joint_offsets = {}
-    joint_offsets[path[0]] = np.array([0, 0, 0])
-    for i in range(1, len(path)):
-        index = path[i]
-        parent_index = path[i - 1]
-        position_A = joint_initial_position[parent_index]
-        position_B = joint_initial_position[index]
-        offset = position_A - position_B
-        joint_offsets[index] = -offset
+    joint_offsets = []
+    for i in range(len(joint_names)):
+        if i == 0:
+            offset = np.array([0, 0, 0])
+        else:
+            parent_index = joint_parents[i]
+            position_A = joint_initial_position[parent_index]
+            position_B = joint_initial_position[i]
+            offset = position_A - position_B
+        joint_offsets.append(-offset)
 
     # begin ccd
     cnt = 0
@@ -58,17 +59,17 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
 
             # 计算local rotation
             joint_rotation = {path[0]: joint_orientations[path[0]]}
-            for j in range(i + 1, len(path)):
+            for j in range(1, len(path)):
                 joint_index = path[j]
                 parent_index = path[j - 1]
                 joint_rotation[joint_index] = R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(joint_orientations[joint_index])
             # 局部FK
             for j in range(i + 1, len(path)):
-                j_index = path[j]
                 j_parent_index = path[j - 1]
+                j_index = path[j]
                 joint_positions[j_index] = joint_positions[j_parent_index] + R.from_quat(joint_orientations[j_parent_index]).apply(joint_offsets[j_index])
 
-                if j < end_joint_index - 1:
+                if j < len(path) - 1:
                     joint_orientations[j_index] = (R.from_quat(joint_orientations[j_parent_index]) * joint_rotation[j_index]).as_quat()
                 else:
                     joint_orientations[j_index] = joint_orientations[j_parent_index]
@@ -79,24 +80,17 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
         cnt += 1
 
     root_joint_index = joint_names.index(meta_data.root_joint)
-    joint_rotation = {0: R.from_quat(joint_orientations[0])}
-    for i in range(1,len(joint_parents)):
+    joint_rotation = {root_joint_index: R.from_quat(joint_orientations[root_joint_index])}
+    for i in range(len(joint_parents)):
         parent_index = joint_parents[i]
+        if parent_index == -1:
+            continue
         joint_rotation[i] = R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(joint_orientations[i])
-
-
-    joint_offsets = [[np.array([0, 0, 0])]]
-    for i in range(1,len(joint_names)):
-        parent_index = joint_parents[i]
-        position_A = joint_initial_position[parent_index]
-        position_B = joint_initial_position[i]
-        offset = position_A - position_B
-        joint_offsets.append(-offset)
 
     for i in range(len(joint_parents)):
         parent_index = joint_parents[i]
         if parent_index == -1:  # 根节点
-            Q1 = joint_rotation[i] # 全局朝向
+            Q1 = joint_rotation[i]# 全局朝向
             P1 = joint_positions[i]
         else:
             Q0 = R.from_quat(joint_orientations[parent_index])
