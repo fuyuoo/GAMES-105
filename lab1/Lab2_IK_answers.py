@@ -88,6 +88,8 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
         joint_rotation[i] = R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(joint_orientations[i])
 
     for i in range(len(joint_parents)):
+        if i in path:
+            continue
         parent_index = joint_parents[i]
         if parent_index == -1:  # 根节点
             Q1 = joint_rotation[i]# 全局朝向
