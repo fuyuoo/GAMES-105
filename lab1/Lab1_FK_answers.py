@@ -212,8 +212,6 @@ def part3_retarget_func(T_pose_bvh_path, A_pose_bvh_path):
                 index_rotate += 1
 
         for i in range(len(T_joint_name)):
-
-
             join_name = T_joint_name[i]
             A_index = A_bone_index[join_name]
 
@@ -225,8 +223,10 @@ def part3_retarget_func(T_pose_bvh_path, A_pose_bvh_path):
 
             elif join_name == "lShoulder":
                 A_joint_rotation[A_index][2] -= 45
+
             elif join_name == "rShoulder":
                 A_joint_rotation[A_index][2] += 45
+
             data.append(A_joint_rotation[A_index])
 
         temp = []
