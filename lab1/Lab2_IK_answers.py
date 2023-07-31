@@ -19,13 +19,12 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
 
     # CCD IK根节点到末端节点，返回Path_ori,path_pos
     # FK 剩余节点，返回所有的ori,pos
-
-    joint_offsets = []
     joint_parents = meta_data.joint_parent
     joint_names = meta_data.joint_name
     joint_initial_position = meta_data.joint_initial_position
     path, path_name, path1, path2 = meta_data.get_path_from_root_to_end()
 
+    joint_offsets = []
     for i in range(len(joint_names)):
         if i == 0:
             offset = np.array([0, 0, 0])
@@ -47,8 +46,7 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
             index = path[cur_joint_index]
             cur_position = joint_positions[index]
             cur2target_vector = (target_pose - cur_position) / np.linalg.norm(target_pose - cur_position)
-            cur2end_vector = (joint_positions[end_joint_index] - cur_position) / np.linalg.norm(
-                joint_positions[end_joint_index] - cur_position)
+            cur2end_vector = (joint_positions[end_joint_index] - cur_position) / np.linalg.norm(joint_positions[end_joint_index] - cur_position)
 
             # 计算轴角
             rotation_radius = np.arccos(np.clip(np.dot(cur2end_vector, cur2target_vector), -1, 1))
@@ -64,19 +62,15 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
             for j in range(1, len(path)):
                 joint_index = path[j]
                 parent_index = path[j - 1]
-                rotation_save = R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(
-                    joint_orientations[joint_index])
-                joint_rotation[joint_index] = rotation_save
+                joint_rotation[joint_index] = R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(joint_orientations[joint_index])
             # 局部FK
             for j in range(i + 1, len(path)):
                 j_parent_index = path[j - 1]
                 j_index = path[j]
-                joint_positions[j_index] = joint_positions[j_parent_index] + R.from_quat(
-                    joint_orientations[j_parent_index]).apply(joint_offsets[j_index])
+                joint_positions[j_index] = joint_positions[j_parent_index] + R.from_quat(joint_orientations[j_parent_index]).apply(joint_offsets[j_index])
 
                 if j < end_joint_index - 1:
-                    joint_orientations[j_index] = (
-                                R.from_quat(joint_orientations[j_parent_index]) * joint_rotation[j_index]).as_quat()
+                    joint_orientations[j_index] = (R.from_quat(joint_orientations[j_parent_index]) * joint_rotation[j_index]).as_quat()
                 else:
                     joint_orientations[j_index] = joint_orientations[j_parent_index]
 
@@ -91,16 +85,12 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
         parent_index = joint_parents[i]
         if parent_index == -1:
             continue
-        rotation_save = R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(joint_orientations[i])
-        joint_rotation[i] = rotation_save
+        joint_rotation[i] = R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(joint_orientations[i])
 
-    # fk but not in path
     for i in range(len(joint_parents)):
-        if i in path:
-            continue
         parent_index = joint_parents[i]
         if parent_index == -1:  # 根节点
-            Q1 = R.from_euler('XYZ', joint_rotation[i], degrees=True)  # 全局朝向
+            Q1 = joint_rotation[i] # 全局朝向
             P1 = joint_positions[i]
         else:
             Q0 = R.from_quat(joint_orientations[parent_index])
