@@ -68,7 +68,7 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
             rotation_vector = R.from_rotvec(rotation_radius * rotation_axis_noml)
 
             # CCD 单次结果
-            # joint_orientations[index] = (rotation_vector * R.from_quat(joint_orientations[index])).as_quat()
+            joint_orientations[index] = (rotation_vector * R.from_quat(joint_orientations[index])).as_quat()
 
             # 计算local rotation
             joint_rotation_temp = {path[0]: joint_orientations[path[0]]}
@@ -94,6 +94,9 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
         cnt += 1
 
 
+    for i in range(len(path2) - 1):
+        joint_orientations[path2[i + 1]] = joint_orientations[path2[i]]
+    joint_orientations[path2[-1]] = joint_orientations[path2[-1]] #path_orientations[len(path2) - 1].as_quat()
 
     for i in range(len(joint_parents)):
         if i in path:
