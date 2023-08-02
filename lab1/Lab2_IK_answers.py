@@ -109,6 +109,7 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
             P1 = P0 + Q0.apply(L0)
 
         joint_positions[i] = P1
+
         joint_orientations[i] = Q1.as_quat()
 
     # 保持根节点旋转不变，其他节点映射原本的朝向

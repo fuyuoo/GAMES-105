@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3e163df5-7ace-48a9-a2e3-a3ec1f939b7e" name="Changes" comment="finish simple retarget">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lab1/Lab1 小结.md" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/Lab1 小结.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lab1/Lab2_IK_answers.py" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/Lab2_IK_answers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -236,7 +234,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lab1/Lab2_IK_answers.py</url>
-          <line>118</line>
+          <line>119</line>
           <option name="timeStamp" value="239" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
