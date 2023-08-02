@@ -92,9 +92,6 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
                 break
         cnt += 1
 
-
-
-    # path2 reverse
     for i in range(len(joint_parents)):
         if i in path:
             continue
@@ -115,14 +112,29 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
         joint_positions[i] = P1
         joint_orientations[i] = Q1.as_quat()
 
-    joint_rotation_temp = {path2[0]: joint_orientations[path2[0]]}
+    # rev_path2 = path2
+    # rev_path2.reverse()
+    # #
+    # joint_rotation_temp = {rev_path2[0]: R.inv(R.from_quat(joint_orientations[rev_path2[0]]))}
+    # for j in range(1, len(rev_path2)):
+    #     joint_index = rev_path2[j]
+    #     parent_index = joint_parents[joint_index]
+    #     joint_rotation_temp[joint_index] = R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(joint_orientations[joint_index])
+    #
+    # for j in range(len(rev_path2)):
+    #     j_index = rev_path2[j]
+    #     j_parent_index = joint_parents[j_index]
+    #     joint_orientations[j_index] = (R.from_quat(joint_orientations[j_parent_index]) * joint_rotation_temp[j_index]).as_quat()
+
+    joint_rotation_temp = {path2[0]: R.inv(R.from_quat(joint_orientations[path2[0]]))}
     for j in range(1, len(path2)):
         joint_index = path2[j]
         parent_index = path2[j - 1]
         joint_rotation_temp[joint_index] = R.inv(R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(joint_orientations[joint_index]))
-    for j in range(1,len(path2)):
-        j_parent_index = joint_parents[j]
+
+    for j in range(1, len(path2)):
         j_index = path[j]
+        j_parent_index = joint_parents[j_index]
         joint_orientations[j_index] = (R.from_quat(joint_orientations[j_parent_index]) * joint_rotation_temp[j_index]).as_quat()
 
 

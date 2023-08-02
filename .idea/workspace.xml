@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3e163df5-7ace-48a9-a2e3-a3ec1f939b7e" name="Changes" comment="finish simple retarget">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lab1/Lab2_IK_answers.py" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/Lab2_IK_answers.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -234,15 +235,15 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lab1/Lab2_IK_answers.py</url>
-          <line>122</line>
-          <option name="timeStamp" value="212" />
+          <line>132</line>
+          <option name="timeStamp" value="224" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="temp_reverse[i]" language="Python" />
-        <watch expression="path2[i + 1]" language="Python" />
+        <watch expression="parent_index" language="Python" />
+        <watch expression="joint_index" language="Python" />
         <watch expression="joint_orientations[path2[i]]" language="Python" />
         <watch expression="joint_orientations[path2[i + 1]]" language="Python" />
         <watch expression="joint_positions[i]" language="Python" />
