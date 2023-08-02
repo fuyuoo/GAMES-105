@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="3e163df5-7ace-48a9-a2e3-a3ec1f939b7e" name="Changes" comment="finish simple retarget">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lab1/Lab1 小结.md" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/Lab1 小结.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lab1/Lab2_IK_answers.py" beforeDir="false" afterPath="$PROJECT_DIR$/lab1/Lab2_IK_answers.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -233,13 +234,23 @@
           <line>78</line>
           <option name="timeStamp" value="198" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/lab1/Lab2_IK_answers.py</url>
+          <line>118</line>
+          <option name="timeStamp" value="239" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/lab1/Lab2_IK_answers.py</url>
+          <line>66</line>
+          <option name="timeStamp" value="240" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="path2[i+1]" language="Python" />
-        <watch expression="path2[i]" language="Python" />
-        <watch expression="min_distance" language="Python" />
+        <watch expression="rotation_radius" language="Python" />
+        <watch expression="rotation_axis_noml" language="Python" />
+        <watch expression="rotation_radius * rotation_axis_noml" language="Python" />
         <watch expression="joint_orientations[path2[i + 1]]" language="Python" />
         <watch expression="joint_positions[i]" language="Python" />
         <watch expression="joint_parents" language="Python" />

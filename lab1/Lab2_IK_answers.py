@@ -39,7 +39,6 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
             offset = position_A - position_B
         joint_offsets.append(-offset)
 
-    root_joint_index = joint_names.index(meta_data.root_joint)
     # 初始rotation
     joint_rotation = {0: R.from_quat(joint_orientations[0])}
     for i in range(len(joint_parents)):
@@ -112,8 +111,9 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
         joint_positions[i] = P1
         joint_orientations[i] = Q1.as_quat()
 
-    # 保持根节点旋转不变，其他节点从根节点从脚开始映射回从原本的root开始的朝向
+    # 保持根节点旋转不变，其他节点映射原本的朝向
     # 因为旋转本身是子节点在父节点的朝向方向上，对调了之后，需要把旋转也对调，所有把节点ori往后挪一位，让现在的父节点得到子节点的朝向，并不需要逆旋转
+
     temp_joint_ori = joint_orientations.copy()
     for i in range(len(path2)-1):
         joint_orientations[path2[i+1]] = temp_joint_ori[path2[i]]
