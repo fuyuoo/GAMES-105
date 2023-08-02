@@ -112,31 +112,11 @@ def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, tar
         joint_positions[i] = P1
         joint_orientations[i] = Q1.as_quat()
 
-    # rev_path2 = path2
-    # rev_path2.reverse()
-    # #
-    # joint_rotation_temp = {rev_path2[0]: R.inv(R.from_quat(joint_orientations[rev_path2[0]]))}
-    # for j in range(1, len(rev_path2)):
-    #     joint_index = rev_path2[j]
-    #     parent_index = joint_parents[joint_index]
-    #     joint_rotation_temp[joint_index] = R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(joint_orientations[joint_index])
-    #
-    # for j in range(len(rev_path2)):
-    #     j_index = rev_path2[j]
-    #     j_parent_index = joint_parents[j_index]
-    #     joint_orientations[j_index] = (R.from_quat(joint_orientations[j_parent_index]) * joint_rotation_temp[j_index]).as_quat()
-
-    joint_rotation_temp = {path2[0]: R.inv(R.from_quat(joint_orientations[path2[0]]))}
-    for j in range(1, len(path2)):
-        joint_index = path2[j]
-        parent_index = path2[j - 1]
-        joint_rotation_temp[joint_index] = R.inv(R.inv(R.from_quat(joint_orientations[parent_index])) * R.from_quat(joint_orientations[joint_index]))
-
-    for j in range(1, len(path2)):
-        j_index = path[j]
-        j_parent_index = joint_parents[j_index]
-        joint_orientations[j_index] = (R.from_quat(joint_orientations[j_parent_index]) * joint_rotation_temp[j_index]).as_quat()
-
+    # 保持根节点旋转不变，其他节点从根节点从脚开始映射回从原本的root开始的朝向
+    # 因为旋转本身是子节点在父节点的朝向方向上，对调了之后，需要把旋转也对调，所有把节点ori往后挪一位，让现在的父节点得到子节点的朝向，并不需要逆旋转
+    temp_joint_ori = joint_orientations.copy()
+    for i in range(len(path2)-1):
+        joint_orientations[path2[i+1]] = temp_joint_ori[path2[i]]
 
     return joint_positions, joint_orientations
 
