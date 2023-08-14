@@ -205,11 +205,16 @@ class BVHMotion():
         输入: rotation 形状为(4,)的ndarray, 四元数旋转
         输出: Ry, Rxz，分别为绕y轴的旋转和转轴在xz平面的旋转，并满足R = Ry * Rxz
         '''
-        Ry = np.zeros_like(rotation)
-        Rxz = np.zeros_like(rotation)
+        quat_r = R.from_quat(rotation)
+        elr_r = quat_r.as_euler("XYZ",True)
+        angle_y = elr_r[1]
+        elr_y = R.from_euler("XYZ",[0,angle_y,0],True)
+        elr_xz = elr_y.inv() * quat_r
+
         # TODO: 你的代码
+        # Slerp()
         
-        return Ry, Rxz
+        return elr_y.as_quat(), elr_xz.as_quat()
     
     # part 1
     def translation_and_rotation(self, frame_num, target_translation_xz, target_facing_direction_xz):
@@ -230,7 +235,10 @@ class BVHMotion():
         
         # 比如说，你可以这样调整第frame_num帧的根节点平移
         offset = target_translation_xz - res.joint_position[frame_num, 0, [0,2]]
-        res.joint_position[:, 0, [0,2]] += offset
+        res.joint_position[frame_num, 0, [0,2]] += offset
+        root_Ori = res.joint_rotation[frame_num, 0]
+        Ry, Rxz = self.decompose_rotation_with_yaxis(root_Ori)
+
         # TODO: 你的代码
         return res
 
