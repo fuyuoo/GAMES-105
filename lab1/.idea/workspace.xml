@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="ac2226e5-a9ac-4b8d-a10c-4b165293da9c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lab1_FK_answers.py" beforeDir="false" afterPath="$PROJECT_DIR$/Lab1_FK_answers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lab2_IK_answers.py" beforeDir="false" afterPath="$PROJECT_DIR$/Lab2_IK_answers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/task2_inverse_kinematics.py" beforeDir="false" afterPath="$PROJECT_DIR$/task2_inverse_kinematics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../lab2/answer_task1.py" beforeDir="false" afterPath="$PROJECT_DIR$/../lab2/answer_task1.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
