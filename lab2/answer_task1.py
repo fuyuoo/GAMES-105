@@ -209,19 +209,19 @@ class BVHMotion():
         输入: rotation 形状为(4,)的ndarray, 四元数旋转
         输出: Ry, Rxz，分别为绕y轴的旋转和转轴在xz平面的旋转，并满足R = Ry * Rxz
         '''
-        global_y_axis_norm = np.array([0., 1., 0.])
-        rotation_y_axis = R.from_quat(rotation).as_matrix()[:,1]
-        rotation_y_axis_norm = rotation_y_axis / np.linalg.norm(rotation_y_axis)
+        y_axis = [0,1,0]
+        rotation_y = R.from_quat(rotation).as_matrix()[:,1]
+        rotation_y_norm = rotation_y / np.linalg.norm(rotation_y)
 
-        rotation_angle = np.arccos(np.clip(np.dot(rotation_y_axis_norm,global_y_axis_norm),-1,1))
-        rotation_axis = np.cross(rotation_y_axis_norm,global_y_axis_norm)
-        rotation_axis_norm = rotation_axis / np.linalg.norm(rotation_axis)
-        rotation_vector = R.from_rotvec(rotation_angle * rotation_axis_norm)
+        rot_angle = np.arccos(np.clip(np.dot(rotation_y_norm,y_axis),-1,1))
+        rot_axis = np.cross(rotation_y_norm,y_axis)
+        rot_axis_norm = rot_axis / np.linalg.norm(rot_axis)
+        rotation_vector = R.from_rotvec(rot_angle * rot_axis_norm)
 
-        Ry = (rotation_vector * R.from_quat(rotation)).as_quat()
-        Rxz = (R.from_quat(Ry).inv() * R.from_quat(rotation)).as_quat()
+        Ry = rotation_vector * R.from_quat(rotation)
+        Rxz = Ry.inv() * R.from_quat(rotation)
 
-        return Ry, Rxz
+        return Ry.as_quat(), Rxz.as_quat()
 
     # part 1
     def translation_and_rotation(self, frame_num, target_translation_xz, target_facing_direction_xz):
@@ -246,29 +246,29 @@ class BVHMotion():
         # TODO: 你的代码
 
         # 把第frame_num帧的根节点的face转到target
-        Ry, _ = self.decompose_rotation_with_yaxis(res.joint_rotation[frame_num, 0])
+        Ry,_ = self.decompose_rotation_with_yaxis(res.joint_rotation[frame_num,0])
+        target_axis = np.array([target_facing_direction_xz[0],0,target_facing_direction_xz[1]])
+        target_axis = target_axis / np.linalg.norm(target_axis)
 
-        rot_target = np.array([target_facing_direction_xz[0], 0, target_facing_direction_xz[1]])
+        Ry_z_axis = R.from_quat(Ry).as_matrix()[:,2]
+        Ry_z_axis = Ry_z_axis / np.linalg.norm(Ry_z_axis)
 
-        # source是Ry的z轴，target是目标的z轴，旋转轴是y轴
-        rot_source = R.from_quat(Ry).as_matrix()[:, 2]
-        rot_target_norm = rot_target / np.linalg.norm(rot_target)
-        rot_source_norm = rot_source / np.linalg.norm(rot_source)
 
-        rot_axis = np.cross(rot_source_norm, rot_target_norm)
-        rot_axis_norm = rot_axis / np.linalg.norm(rot_axis)
+        rota_axi = np.cross(Ry_z_axis,target_axis)
+        rota_axi = rota_axi / np.linalg.norm(rota_axi)
 
-        theta = np.arccos(np.dot(rot_source_norm, rot_target_norm))
-        delta_rotation = R.from_rotvec(theta * rot_axis_norm)
+        rot_angle = np.arccos(np.dot(Ry_z_axis,target_axis))
 
-        # 修改orientation
-        res.joint_rotation[:, 0] = np.apply_along_axis(lambda q: (delta_rotation * R.from_quat(q)).as_quat(), axis=1, arr=res.joint_rotation[:, 0])
+        delta_rotation = R.from_rotvec(rot_angle * rota_axi)
+
+        res.joint_rotation[:, 0, :] = np.apply_along_axis(lambda q : (delta_rotation * R.from_quat(q)).as_quat(), axis=1, arr=res.joint_rotation[:, 0, :])
 
         # 修改position
-        init_position = res.joint_position[frame_num, 0, [0, 2]]
-        res.joint_position[:, 0, [0, 2]] -= init_position
+        offset_center = res.joint_position[frame_num, 0, [0,2]]
+        res.joint_position[:, 0, [0,2]] -= offset_center
         res.joint_position[:, 0, :] = np.apply_along_axis(delta_rotation.apply, axis=1, arr=res.joint_position[:, 0, :])
-        res.joint_position[:, 0, [0, 2]] += init_position
+        res.joint_position[:, 0, [0,2]] += offset_center
+
 
         return res
 
